@@ -11,7 +11,7 @@ TcpServer::TcpServer(QObject *parent) :
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(sendSeason()));
-    timer->start(5000);
+    timer->start(10000);
 
     if(!server->listen(QHostAddress::Any, 9999))
     {
@@ -35,6 +35,11 @@ void TcpServer::newConnection()
     QTcpSocket *socket = server->nextPendingConnection();
 
     clients[nbConnected] = socket;
+
+    socket->write(QByteArray::number(nbConnected));
+    socket->flush();
+    socket->waitForBytesWritten(3000);
+
     nbConnected++;
 }
 
@@ -47,3 +52,4 @@ void TcpServer::sendSeason()
         clients[i]->waitForBytesWritten(3000);
     }
 }
+

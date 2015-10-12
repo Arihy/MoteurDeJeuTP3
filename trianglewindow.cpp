@@ -13,6 +13,14 @@ TriangleWindow::TriangleWindow(quint16 port)
     timer->start(maj);
     master = true;
 
+    allSeasons = new QString[4];
+    allSeasons[0] = "SUMMER";
+    allSeasons[1] = "AUTUMN";
+    allSeasons[2] = "WINTER";
+    allSeasons[3] = "SPRING";
+
+    currentSeason = 0;
+
     connectToServer(port);
 }
 TriangleWindow::TriangleWindow(int _maj, quint16 port)
@@ -28,6 +36,14 @@ TriangleWindow::TriangleWindow(int _maj, quint16 port)
     timer = new QTimer();
     timer->connect(timer, SIGNAL(timeout()),this, SLOT(renderNow()));
     timer->start(maj);
+
+    allSeasons = new QString[4];
+    allSeasons[0] = "SUMMER";
+    allSeasons[1] = "AUTUMN";
+    allSeasons[2] = "WINTER";
+    allSeasons[3] = "SPRING";
+
+    currentSeason = 0;
 
     connectToServer(port);
 }
@@ -61,7 +77,13 @@ void TriangleWindow::readyRead()
     //read something
     QString message = client->readAll();
     if(message == "nextSeason")
-        qDebug() << "change season";
+    {
+        currentSeason++;
+        currentSeason %= 4;
+        qDebug() << currentSeason;
+    }
+    else
+        currentSeason = message.toInt();
 }
 
 void TriangleWindow::initialize()
@@ -252,7 +274,8 @@ void TriangleWindow::keyPressEvent(QKeyEvent *event)
 
 void TriangleWindow::displayPoints()
 {
-    glColor3f(1.0f, 1.0f, 1.0f);
+    //glColor3f(1.0f, 1.0f, 1.0f);
+    updateSeason();
     glBegin(GL_POINTS);
     uint id = 0;
     for(int i = 0; i < m_image.width(); i++)
@@ -519,4 +542,17 @@ void TriangleWindow::displayColor(float alt)
     }
 
 }
+
+void TriangleWindow::updateSeason()
+{
+    if(allSeasons[currentSeason] == "SUMMER")
+        glColor3f(01.0f, 0.0f, 1.0f);
+    else if(allSeasons[currentSeason] == "AUTUMN")
+        glColor3f(1.0f, 0.2f, 0.2f);
+    else if(allSeasons[currentSeason] == "WINTER")
+        glColor3f(01.0f, 1.0f, 1.0f);
+    else if(allSeasons[currentSeason] == "SPRING")
+        glColor3f(0.2f, 1.0f, 0.2f);
+}
+
 

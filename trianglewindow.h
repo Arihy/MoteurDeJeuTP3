@@ -34,6 +34,7 @@ public:
 
     void loadMap(QString localPath);
     void connectToServer(quint16 port);
+    void updateSeason();
     Camera* c;
 
     QTcpSocket *client;
@@ -51,6 +52,9 @@ private:
     int maj = 20;
 
     QTimer *timer;
+    QString *allSeasons;
+
+    int currentSeason;
 
 public slots:
     void connected();
