@@ -6,11 +6,14 @@
 #include "openglwindow.h"
 #include "camera.h"
 #include "point.h"
+#include "particule.h"
 
 #include <time.h>
 
 #include <QTcpSocket>
 #include <QTimer>
+
+#define MAX_PARTICULES 700
 
 class TriangleWindow : public OpenGLWindow
 {
@@ -29,12 +32,14 @@ public:
     void displayTrianglesC();
     void displayPoints();
     void displayTrianglesTexture();
+    void drawParticules();
 
     void displayColor(float);
 
     void loadMap(QString localPath);
     void connectToServer(quint16 port);
     void updateSeason();
+    void initParticules();
     Camera* c;
 
     QTcpSocket *client;
@@ -52,9 +57,12 @@ private:
     int maj = 20;
 
     QTimer *timer;
+    QTimer *timerParticule;
     QString *allSeasons;
 
     int currentSeason;
+
+    Particule **particules;
 
 public slots:
     void connected();

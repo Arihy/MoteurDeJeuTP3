@@ -4,12 +4,14 @@ SOURCES += $$PWD/openglwindow.cpp \
     tcpserver.cpp \
     trianglewindow.cpp \
     camera.cpp \
-    point.cpp
+    point.cpp \
+    particule.cpp
 HEADERS += $$PWD/openglwindow.h \
     tcpserver.h \
     trianglewindow.h \
     camera.h \
-    point.h
+    point.h \
+    particule.h
 
 SOURCES += \
     main.cpp

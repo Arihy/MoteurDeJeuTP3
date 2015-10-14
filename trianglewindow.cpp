@@ -8,6 +8,7 @@ TriangleWindow::TriangleWindow(quint16 port)
     s += QString::number(maj);
     s += ")";
     setTitle(s);
+
     timer = new QTimer();
     timer->connect(timer, SIGNAL(timeout()),this, SLOT(renderNow()));
     timer->start(maj);
@@ -33,9 +34,15 @@ TriangleWindow::TriangleWindow(int _maj, quint16 port)
     s += QString::number(maj);
     s += ")";
     setTitle(s);
+
     timer = new QTimer();
     timer->connect(timer, SIGNAL(timeout()),this, SLOT(renderNow()));
     timer->start(maj);
+
+    timerParticule = new QTimer();
+    timerParticule->start(300);
+
+    particules = new Particule*[MAX_PARTICULES];
 
     allSeasons = new QString[4];
     allSeasons[0] = "SUMMER";
@@ -80,7 +87,6 @@ void TriangleWindow::readyRead()
     {
         currentSeason++;
         currentSeason %= 4;
-        qDebug() << currentSeason;
     }
     else
         currentSeason = message.toInt();
@@ -99,8 +105,9 @@ void TriangleWindow::initialize()
     glOrtho(-1.0, 1.0, -1.0, 1.0, -100.0, 100.0);
 
 
-    loadMap(":/bureau256.png");
+    loadMap(":/heightmap-2.png");
 
+    initParticules();
 }
 
 void TriangleWindow::loadMap(QString localPath)
@@ -112,12 +119,12 @@ void TriangleWindow::loadMap(QString localPath)
 
     uint id = 0;
     p = new Point[m_image.width() * m_image.height()];
+
     QRgb pixel;
     for(int i = 0; i < m_image.width(); i++)
     {
         for(int j = 0; j < m_image.height(); j++)
         {
-
             pixel = m_image.pixel(i,j);
 
             id = i*m_image.width() +j;
@@ -126,6 +133,18 @@ void TriangleWindow::loadMap(QString localPath)
             p[id].y = (float)j/(m_image.height()) - ((float)m_image.height()/2.0)/m_image.height();
             p[id].z = 0.001f * (float)(qRed(pixel));
         }
+    }
+}
+
+void TriangleWindow::initParticules()
+{
+    for(int k = 0; k < MAX_PARTICULES; k++)
+    {
+        int i = rand() % m_image.width();
+        int j = rand() % m_image.height();
+
+        uint id = i*m_image.width() +j;
+        particules[k] = new Particule(p[id].x, p[id].y, p[id].z, timerParticule);
     }
 }
 
@@ -149,16 +168,17 @@ void TriangleWindow::render()
         if(master)
             c->anim +=0.05f;
     }
+
     switch(c->etat)
     {
     case 0:
-        displayPoints();
+        displayTrianglesTexture();
         break;
     case 1:
         displayLines();
         break;
     case 2:
-        displayTriangles();
+        displayPoints();
         break;
     case 3:
         displayTrianglesC();
@@ -168,7 +188,7 @@ void TriangleWindow::render()
         break;
     case 5:
 
-        displayTrianglesTexture();
+        displayTriangles();
         displayLines();
         break;
     default:
@@ -176,6 +196,7 @@ void TriangleWindow::render()
         break;
     }
 
+    drawParticules();
     ++m_frame;
 }
 
@@ -271,11 +292,30 @@ void TriangleWindow::keyPressEvent(QKeyEvent *event)
     setTitle(s);
 }
 
+void TriangleWindow::drawParticules()
+{
+    if(allSeasons[currentSeason] == "WINTER")
+    {
+        glColor3f(1, 1, 1);
+        glPointSize(2.0f);
+    }
+    else if(allSeasons[currentSeason] == "AUTUMN")
+    {
+        glColor3f(0, 0, 0.8);
+        glPointSize(1.0f);
+    }
+    else
+        return;
+    glBegin(GL_POINTS);
+    for(int i = 0; i < MAX_PARTICULES; i++)
+    {
+        glVertex3f(particules[i]->getX(), particules[i]->getY(), particules[i]->getZ());
+    }
+    glEnd();
+}
 
 void TriangleWindow::displayPoints()
 {
-    //glColor3f(1.0f, 1.0f, 1.0f);
-    updateSeason();
     glBegin(GL_POINTS);
     uint id = 0;
     for(int i = 0; i < m_image.width(); i++)
@@ -296,7 +336,6 @@ void TriangleWindow::displayPoints()
 
 void TriangleWindow::displayTriangles()
 {
-    glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_TRIANGLES);
     uint id = 0;
 
@@ -468,7 +507,6 @@ void TriangleWindow::displayLines()
 
 void TriangleWindow::displayTrianglesTexture()
 {
-    glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_TRIANGLES);
     uint id = 0;
 
@@ -528,13 +566,13 @@ void TriangleWindow::displayColor(float alt)
     {
         glColor3f(01.0f, 1.0f, 1.0f);
     }
-    else     if (alt > 0.1)
+    else if (alt > 0.08)
     {
-        glColor3f(alt, 1.0f, 1.0f);
+        glColor3f(0.6f, 0.4f, 0.1f);
     }
-    else     if (alt > 0.05f)
+    else if (alt > 0.03f)
     {
-        glColor3f(01.0f, alt, alt);
+        glColor3f(0.2, 0.5f, 0.14f);
     }
     else
     {
@@ -542,17 +580,3 @@ void TriangleWindow::displayColor(float alt)
     }
 
 }
-
-void TriangleWindow::updateSeason()
-{
-    if(allSeasons[currentSeason] == "SUMMER")
-        glColor3f(01.0f, 0.0f, 1.0f);
-    else if(allSeasons[currentSeason] == "AUTUMN")
-        glColor3f(1.0f, 0.2f, 0.2f);
-    else if(allSeasons[currentSeason] == "WINTER")
-        glColor3f(01.0f, 1.0f, 1.0f);
-    else if(allSeasons[currentSeason] == "SPRING")
-        glColor3f(0.2f, 1.0f, 0.2f);
-}
-
-

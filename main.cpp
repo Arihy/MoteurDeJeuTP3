@@ -33,21 +33,21 @@ int main(int argc, char **argv)
 
     Camera* c=new Camera();
 
-    TriangleWindow window(9999);
+    TriangleWindow window(1000, 9999);
     window.c = c;
     window.setFormat(format);
     window.resize(500,375);
     window.setPosition(0,0);
     window.show();
 
-    TriangleWindow window2(100, 9999);
+    TriangleWindow window2(1000, 9999);
     window2.c = c;
     window2.setFormat(format);
     window2.resize(500,375);
     window2.setPosition(500, 0);
     window2.show();
 
-    TriangleWindow window3(500, 9999);
+    TriangleWindow window3(1000, 9999);
     window3.c = c;
     window3.setFormat(format);
     window3.resize(500,375);

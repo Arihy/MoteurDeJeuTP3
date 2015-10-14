@@ -38,7 +38,6 @@ void TcpServer::newConnection()
 
     socket->write(QByteArray::number(nbConnected));
     socket->flush();
-    socket->waitForBytesWritten(3000);
 
     nbConnected++;
 }
@@ -49,7 +48,6 @@ void TcpServer::sendSeason()
     {
         clients[i]->write("nextSeason");
         clients[i]->flush();
-        clients[i]->waitForBytesWritten(3000);
     }
 }
 
