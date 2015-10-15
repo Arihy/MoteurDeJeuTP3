@@ -52,6 +52,8 @@ TriangleWindow::TriangleWindow(int _maj, quint16 port)
 
     currentSeason = 0;
 
+    light = false;
+
     connectToServer(port);
 }
 
@@ -153,6 +155,23 @@ void TriangleWindow::render()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
+    GLfloat LightAmbient[] = { 0.6f, 0.6f, 0.6f, 1.0f };
+    GLfloat LightAmbientSummer[] = { 0.6f, 0.6f, 0.3f, 1.0f };
+    GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat LightPosition[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
+    glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
+
+    if(allSeasons[currentSeason] == "SUMMER")
+    {
+        glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbientSummer);
+    }
+
+    glEnable( GL_LIGHTING );
+    glEnable(GL_LIGHT1);
+
+    glEnable(GL_COLOR_MATERIAL);
 
     glLoadIdentity();
     glScalef(c->ss,c->ss,c->ss);
@@ -168,6 +187,11 @@ void TriangleWindow::render()
         if(master)
             c->anim +=0.05f;
     }
+
+//    if( light )
+//      glEnable( GL_LIGHTING );
+//    else
+//      glDisable( GL_LIGHTING );
 
     switch(c->etat)
     {
@@ -187,7 +211,6 @@ void TriangleWindow::render()
         displayTrianglesTexture();
         break;
     case 5:
-
         displayTriangles();
         displayLines();
         break;
@@ -260,18 +283,8 @@ void TriangleWindow::keyPressEvent(QKeyEvent *event)
         timer->stop();
         timer->start(maj);
         break;
-    case 'L':
-        maj = maj - 20;
-        if(maj < 1)
-            maj = 1;
-        timer->stop();
-        timer->start(maj);
-        break;
-    case 'M':
-        maj = maj + 20;
-
-        timer->stop();
-        timer->start(maj);
+    case Qt::Key_L:
+        light = !light;
         break;
     case 'X':
         carte ++;
@@ -292,8 +305,50 @@ void TriangleWindow::keyPressEvent(QKeyEvent *event)
     setTitle(s);
 }
 
+void TriangleWindow::getNormal(Point O, Point X, Point Y)
+{
+    // vecteur OX
+    Point vx;
+    vx.x=X.x-O.x;
+    vx.y=X.y-O.y;
+    vx.z=X.z-O.z;
+    // norme de OX
+    float length=sqrt(vx.x*vx.x+vx.y*vx.y+vx.z*vx.z);
+    // normalisation
+    vx.x/=length;
+    vx.y/=length;
+    vx.z/=length;
+
+    // vecteur OY
+    Point vy;
+    vy.x=Y.x-O.x;
+    vy.y=Y.y-O.y;
+    vy.z=Y.z-O.z;
+    // norme de OX
+    length=sqrt(vy.x*vy.x+vy.y*vy.y+vy.z*vy.z);
+    // normalisation
+    vy.x/=length;
+    vy.y/=length;
+    vy.z/=length;
+
+    // Calcul de la normale
+    Point normal;
+    normal.x=vx.y*vy.z-vy.y*vx.z;
+    normal.y=vx.z*vy.x-vx.x*vy.z;
+    normal.z=vx.x*vy.y-vx.y*vy.x;
+
+    glNormal3f(normal.x,normal.y,normal.z);
+}
+
 void TriangleWindow::drawParticules()
 {
+
+    glColor3f(1, 0, 0.8);
+    glPointSize(6.0f);
+
+    glBegin(GL_POINT);
+    glVertex3f(-0.19f, 0.09f, 0.4f);
+    glEnd();
     if(allSeasons[currentSeason] == "WINTER")
     {
         glColor3f(1, 1, 1);
@@ -309,6 +364,8 @@ void TriangleWindow::drawParticules()
     glBegin(GL_POINTS);
     for(int i = 0; i < MAX_PARTICULES; i++)
     {
+        if(i == 0)
+            qDebug() << particules[i]->getX() << "," << particules[i]->getY() << "," << particules[i]->getZ();
         glVertex3f(particules[i]->getX(), particules[i]->getY(), particules[i]->getZ());
     }
     glEnd();
@@ -507,6 +564,7 @@ void TriangleWindow::displayLines()
 
 void TriangleWindow::displayTrianglesTexture()
 {
+    glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_TRIANGLES);
     uint id = 0;
 
@@ -517,18 +575,21 @@ void TriangleWindow::displayTrianglesTexture()
 
             id = i*m_image.width() +j;
             displayColor(p[id].z);
+            getNormal(p[id],p[i*m_image.width() +(j+1)],p[(i+1)*m_image.width() +j]);
             glVertex3f(
                         p[id].x,
                         p[id].y,
                         p[id].z);
             id = i*m_image.width() +(j+1);
             displayColor(p[id].z);
+            getNormal(p[id],p[(i+1)*m_image.width() +j],p[i*m_image.width() +j]);
             glVertex3f(
                         p[id].x,
                         p[id].y,
                         p[id].z);
             id = (i+1)*m_image.width() +j;
             displayColor(p[id].z);
+            getNormal(p[id],p[i*m_image.width() +j],p[i*m_image.width() +(j+1)]);
             glVertex3f(
                         p[id].x,
                         p[id].y,
@@ -538,18 +599,21 @@ void TriangleWindow::displayTrianglesTexture()
 
             id = i*m_image.width() +(j+1);
             displayColor(p[id].z);
+            getNormal(p[id],p[(i+1)*m_image.width() +j+1],p[(i+1)*m_image.width() +j]);
             glVertex3f(
                         p[id].x,
                         p[id].y,
                         p[id].z);
             id = (i+1)*m_image.width() +j+1;
             displayColor(p[id].z);
+            getNormal(p[id],p[(i+1)*m_image.width() +j],p[i*m_image.width() +(j+1)]);
             glVertex3f(
                         p[id].x,
                         p[id].y,
                         p[id].z);
             id = (i+1)*m_image.width() +j;
             displayColor(p[id].z);
+            getNormal(p[id],p[i*m_image.width() +(j+1)],p[i*m_image.width() +(j+1)]);
             glVertex3f(
                         p[id].x,
                         p[id].y,

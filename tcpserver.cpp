@@ -11,7 +11,7 @@ TcpServer::TcpServer(QObject *parent) :
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(sendSeason()));
-    timer->start(10000);
+    timer->start(20000);
 
     if(!server->listen(QHostAddress::Any, 9999))
     {

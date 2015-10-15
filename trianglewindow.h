@@ -12,6 +12,7 @@
 
 #include <QTcpSocket>
 #include <QTimer>
+#include <math.h>
 
 #define MAX_PARTICULES 700
 
@@ -40,6 +41,7 @@ public:
     void connectToServer(quint16 port);
     void updateSeason();
     void initParticules();
+    void getNormal(Point O, Point X, Point Y);
     Camera* c;
 
     QTcpSocket *client;
@@ -63,6 +65,8 @@ private:
     int currentSeason;
 
     Particule **particules;
+
+    bool light;
 
 public slots:
     void connected();
