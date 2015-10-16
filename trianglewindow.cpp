@@ -40,7 +40,7 @@ TriangleWindow::TriangleWindow(int _maj, quint16 port)
     timer->start(maj);
 
     timerParticule = new QTimer();
-    timerParticule->start(300);
+    timerParticule->start(200);
 
     particules = new Particule*[MAX_PARTICULES];
 
@@ -55,6 +55,25 @@ TriangleWindow::TriangleWindow(int _maj, quint16 port)
     light = false;
 
     connectToServer(port);
+}
+
+void facettisationSphere(float rayon, int nbMeridien, int nbParallele, Point centre)
+{
+  for(int i = 0; i <= nbParallele; i++)
+  {
+    double phy = PI * ((double) i / nbParallele);
+    glBegin(GL_LINE_STRIP);
+    for(int j = 0; j <= nbMeridien; j++)
+    {
+      double tetha = 2 * PI * ((double) j / nbMeridien);
+      Point tmp;
+      tmp.x = rayon * sin(phy) * cos(tetha);
+      tmp.y = rayon * sin(phy) * sin(tetha);
+      tmp.z = rayon * cos(phy);
+      glVertex3f(tmp.x + centre.x, tmp.y + centre.y, tmp.z + centre.z);
+    }
+    glEnd();
+  }
 }
 
 void TriangleWindow::connectToServer(quint16 port)
@@ -220,6 +239,13 @@ void TriangleWindow::render()
     }
 
     drawParticules();
+    Point centre;
+    centre.x = -0.6;
+    centre.y = -0.4;
+    centre.z = 0.6;
+    glColor3f(1, 1, 0);
+    if(allSeasons[currentSeason] == "SUMMER")
+        facettisationSphere(0.1, 30, 30, centre);
     ++m_frame;
 }
 
@@ -344,7 +370,6 @@ void TriangleWindow::drawParticules()
 {
 
     glColor3f(1, 0, 0.8);
-    glPointSize(6.0f);
 
     glBegin(GL_POINT);
     glVertex3f(-0.19f, 0.09f, 0.4f);
@@ -352,20 +377,18 @@ void TriangleWindow::drawParticules()
     if(allSeasons[currentSeason] == "WINTER")
     {
         glColor3f(1, 1, 1);
-        glPointSize(2.0f);
+        glPointSize(4.0f);
     }
     else if(allSeasons[currentSeason] == "AUTUMN")
     {
-        glColor3f(0, 0, 0.8);
-        glPointSize(1.0f);
+        glColor3f(0, 0, 1);
+        glPointSize(2.0f);
     }
     else
         return;
     glBegin(GL_POINTS);
     for(int i = 0; i < MAX_PARTICULES; i++)
     {
-        if(i == 0)
-            qDebug() << particules[i]->getX() << "," << particules[i]->getY() << "," << particules[i]->getZ();
         glVertex3f(particules[i]->getX(), particules[i]->getY(), particules[i]->getZ());
     }
     glEnd();

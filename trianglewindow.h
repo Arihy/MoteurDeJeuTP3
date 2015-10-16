@@ -15,6 +15,7 @@
 #include <math.h>
 
 #define MAX_PARTICULES 700
+#define PI 3.141592653589793238463
 
 class TriangleWindow : public OpenGLWindow
 {
