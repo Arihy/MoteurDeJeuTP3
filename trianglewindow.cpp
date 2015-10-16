@@ -177,6 +177,7 @@ void TriangleWindow::render()
     GLfloat LightAmbient[] = { 0.6f, 0.6f, 0.6f, 1.0f };
     GLfloat LightAmbientSummer[] = { 0.6f, 0.6f, 0.3f, 1.0f };
     GLfloat LightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat LightDiffuseSummer[] = { 0.8f, 0.8f, 0.8f, 1.0f };
     GLfloat LightPosition[] = { 0.4f, 0.4f, 0.4f, 1.0f };
     glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
@@ -185,6 +186,7 @@ void TriangleWindow::render()
     if(allSeasons[currentSeason] == "SUMMER")
     {
         glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbientSummer);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, LightDiffuseSummer);
     }
 
     glEnable( GL_LIGHTING );
@@ -657,13 +659,21 @@ void TriangleWindow::displayColor(float alt)
     {
         glColor3f(0.6f, 0.4f, 0.1f);
     }
-    else if (alt > 0.03f)
+    else if (alt > 0.04f)
     {
         glColor3f(0.2, 0.5f, 0.14f);
     }
+    else if (alt > 0.03f)
+    {
+        glColor3f(1.0f, 0.8f, 0.6f);
+    }
+    else if (alt > 0.02f)
+    {
+        glColor3f(0.0f, 1.0f, 1.0f);
+    }
     else
     {
-        glColor3f(0.0f, 0.0f, 1.0f);
+        glColor3f(0.0f, 0.9f, 0.9f);
     }
 
 }

@@ -12,7 +12,7 @@ Particule::Particule(float x, float y, float ground, QTimer *timer)
     this->y = y;
     this->z = 0.40;
     this->ground = ground;
-    this->moveSpeed = (((float)(rand()) / (float)(RAND_MAX))/100) + 0.001;
+    this->moveSpeed = (((float)(rand()) / (float)(RAND_MAX))/100) + 0.0001;
 }
 
 float Particule::getX() { return x; }
