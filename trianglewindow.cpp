@@ -297,7 +297,10 @@ void TriangleWindow::keyPressEvent(QKeyEvent *event)
     case 'W':
         c->etat ++;
         if(c->etat > 5)
+        {
             c->etat = 0;
+            initParticules();
+        }
         break;
     case 'P':
         maj++;
